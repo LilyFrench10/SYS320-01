@@ -1,0 +1,30 @@
+Function ApacheLogs() {
+    
+    $logNotFormatted = Get-Content "C:\xampp\apache\logs\access.log"
+    $tableRecords = @()
+
+    
+    for($i=0; $i -lt $logNotFormatted.Count; $i++) {
+        # Split the line into words
+        $words = $logNotFormatted.Split(" ");
+
+        
+        # Store parsed log data into PSCustomObject
+        $tableRecords += [PSCustomObject]@{"IP"        = $words[0];
+                                           "Time"      = $words[3].Trim('[')
+                                           "Method"    = $words[5].Trim('"')
+                                           "Page"      = $words[6]
+                                           "Protocol"  = $words[7].Trim('"')
+                                           "Response"  = $words[8]
+                                           "Referrer"  = $words[9].Trim('"')
+                                           "Client"    = $words[10]
+        }
+    }
+
+    # Filter the results for IPs in the 10.* network
+    return $tableRecords | Where-Object { $_.IP -like "10.*" }
+}
+
+# Call the function and display the output
+$tableRecords = ApacheLogs
+$tableRecords | Format-Table -AutoSize -Wrap
