@@ -1,0 +1,55 @@
+function gatherClasses(){
+$page = Invoke-WebRequest -TimeoutSec 10 http://10.0.17.37/Courses.html
+
+#Get all tr from HTML
+$trs=$page.ParsedHtml.body.getElementsByTagName("tr")
+
+#empty array
+$FullTable = @()
+for($i=1; $i -lt $trs.length; $i++){
+    
+    #get every td element of current tr
+    #most likely problem line
+    $tds = $trs[$i].getElementsByTagName("td")
+
+    #seperate start time and end time
+    $Times = $tds[5].innerText.Split("-")
+    $Days=@()
+    if($tds[4].innerText -like"M"){$Days += "Monday"}
+    
+    if($tds[4].innerText -ilike "T"){ $Days += "Tuesday" }
+    ElseIf($tds[4].innerText -ilike "T"){$Days += "Tuesday" }
+
+    if($tds[4].innerText -ilike "W"){ $Days += "Wednesday" }
+
+    if($tds[4].innerText -ilike "TH"){ $Days += "Thursday" }
+
+    if($tds[4].innerText -ilike "F"){ $Days += "Friday" }
+
+    if($tds[4].innerText -ilike "TF"){ $Days += "Tuesday, Friday" }
+
+    if($tds[4].innerText -ilike "MTH"){ $Days += "Monday, Thursday" }
+
+    $FullTable += [PSCustomobject]@{"Class Code" = $tds[0].innerText;
+                                     "Title" = $tds[1].innerText;
+                                     "Days" = $Days;
+                                     "Time Start" = $Times[0];
+                                     "Time End" = $Times[1];
+                                     "Instructor" = $tds[6].innerText;
+                                     "Location" = $tds[9].innerText;
+                                     }
+                                     
+} #end for loop
+
+$ITIns = $FullTable | where { ($_."Class Code" -ilike "SYS*") -or
+                                                  ($_."Class Code" -ilike "NET*") -or
+                                                  ($_."Class Code" -ilike "SEC*") -or
+                                                  ($_."Class Code" -ilike "FOR*") -or
+                                                  ($_."Class Code" -ilike "CSI*") -or
+                                                  ($_."Class Code" -ilike "DAT*")
+} | select Instructor
+
+$FullTable | where { $_.Instructor -in $ITIns.Instructor } | Group-Object "Instructor" | select Count, Name | Sort-Object Count -Descending
+}
+
+gatherClasses
