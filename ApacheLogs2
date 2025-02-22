@@ -1,6 +1,6 @@
 Function ApacheLogs() {
     
-    $logNotFormatted = Get-Content "C:\xampp\apache\logs\access.log"
+    $logNotFormatted = Get-Content "C:\xampp\apache\logs\access.log" | Select-Object -Last 10
     $tableRecords = @()
 
     
