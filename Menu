@@ -1,0 +1,65 @@
+. (Join-Path $PSScriptRoot Users.ps1)
+. (Join-Path $PSScriptRoot Event-Logs.ps1)
+. (Join-Path $PSScriptRoot openChrome.ps1)
+. (Join-Path $PSScriptRoot ApacheLogs2.ps1)
+clear
+
+$Prompt = "`n"
+$Prompt += "Please choose your operation:`n"
+$Prompt += "1 - Display last 10 apache logs`n"
+$Prompt += "2 - Display last 10 failed logins`n"
+$Prompt += "3 - List at risk users`n"
+$Prompt += "4 - Open/Close chrome`n"
+$Prompt += "5 - Exit`n"
+
+
+
+$operation = $true
+
+while($operation){
+
+    
+    Write-Host $Prompt | Out-String
+    $choice = Read-Host 
+
+    if($choice -eq 1){
+        $tableRecords = ApacheLogs
+        $tableRecords | Format-Table -AutoSize -Wrap
+    }
+
+    elseif($choice -eq 2){
+        ##TODO make only last 10 for all users
+        
+        $days = Read-Host -Prompt "Enter number of days"
+
+        
+        if ($checkUser = $true)
+        {
+            $userLogins = getFailedLogins -timeBack $days
+
+            Write-Host ($userLogins | Where-Object { $_.User -ilike "*$name"} | Format-Table | Out-String)
+        }
+        
+    }
+
+    if($choice -eq 3){
+
+            $days = Read-Host -Prompt "Enter number of days"
+            
+            $userList = getFailedLogins2 -timeBack $days
+            Write-Host $UserList | Out-String
+        
+    }
+
+    if($choice -eq 4){
+        openChrome
+    }
+
+    if($choice -eq 5){
+        Write-Host "Goodbye" | Out-String
+        exit
+        $operation = $false 
+    }
+
+
+}
